@@ -2,28 +2,10 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Optional
+from database.expense_database_base import IExpenseDatabase, CATEGORIES
 
-class ExpenseDatabase:
+class ExpenseDatabase(IExpenseDatabase):
     """Classe per gestire il database delle spese"""
-    
-    CATEGORIES = [
-        "Mutuo",
-        "Casa",
-        "Investimenti",
-        "Spese auto",
-        "Svago",
-        "Alimentari",
-        "Viaggi",
-        "Regali",
-        "Salute",
-        "Cane",
-        "Parrucchiere",
-        "Mensa",
-        "Telefono",
-        "Donazione",
-        "Caffè",
-        "Abbigliamento"
-    ]
     
     def __init__(self, db_path: str = "expenses.db"):
         self.db_path = db_path
@@ -67,8 +49,8 @@ class ExpenseDatabase:
         """Aggiunge una nuova spesa al database"""
         try:
             # Validazione categoria
-            if category not in self.CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
+            if category not in CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
                 return False
             
             conn = self.get_connection()
@@ -90,8 +72,8 @@ class ExpenseDatabase:
         """Aggiorna una spesa esistente"""
         try:
             # Validazione categoria
-            if category not in self.CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
+            if category not in CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
                 return False
             
             conn = self.get_connection()
@@ -256,7 +238,7 @@ class ExpenseDatabase:
                 
                 # Validazione categoria prima dell'inserimento
                 category = str(row['category'])
-                if category not in self.CATEGORIES:
+                if category not in CATEGORIES:
                     if category not in invalid_categories:
                         invalid_categories.append(category)
                     error_count += 1
@@ -364,3 +346,4 @@ class ExpenseDatabase:
 
 
 db = ExpenseDatabase()
+
