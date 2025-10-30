@@ -2,46 +2,51 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Optional
-from database.expense_database_base import IExpenseDatabase, CATEGORIES
+from database.expense_database_base import IExpenseDatabase
 import psycopg2
 import streamlit as st
+from sqlalchemy import create_engine, text
 
+PLACEHOLDER = "%s"
 
 class ExpenseDatabase(IExpenseDatabase):
     """Classe per gestire il database delle spese"""
-    
+
     def get_connection(self):
+        return super().get_connection()
+    
+    def get_engine(self):
         """Crea una connessione al database"""
-        conn = psycopg2.connect(
-            host=st.secrets["DB_HOST"],
-            user=st.secrets["DB_USER"],
-            password=st.secrets["DB_PASS"],
-            dbname=st.secrets["DB_NAME"],
-            port=st.secrets.get("DB_PORT", "5432"),
-            sslmode=st.secrets.get("DB_SSLMODE", "require"),
-            channel_binding=st.secrets.get("DB_CHANNEL_BINDING", "require")
-        )
-        return conn
+        # conn = psycopg2.connect(
+        #     host=st.secrets["DB_HOST"],
+        #     user=st.secrets["DB_USER"],
+        #     password=st.secrets["DB_PASS"],
+        #     dbname=st.secrets["DB_NAME"],
+        #     port=st.secrets.get("DB_PORT", "5432"),
+        #     sslmode=st.secrets.get("DB_SSLMODE", "require"),
+        #     channel_binding=st.secrets.get("DB_CHANNEL_BINDING", "require")
+        # )
+        conn_string = f"postgresql+psycopg2://{st.secrets['DB_USER']}:{st.secrets['DB_PASS']}@{st.secrets['DB_HOST']}/{st.secrets['DB_NAME']}?sslmode=require&channel_binding=require"
+        engine = create_engine(conn_string)
+        return engine
     
 
     def add_expense(self, date: str, category: str, amount: float, description: str) -> bool:
         """Aggiunge una nuova spesa al database"""
         try:
             # Validazione categoria
-            if category not in CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
+            if category not in self.CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
                 return False
             
-            conn = self.get_connection()
-            cursor = conn.cursor()
+            engine = self.get_engine()
+            with engine.begin() as conn:
             
-            cursor.execute("""
-                INSERT INTO expenses (date, category, amount, description)
-                VALUES (?, ?, ?, ?)
-            """, (date, category, amount, description))
+                conn.execute(text(f"""
+                    INSERT INTO expenses (date, category, amount, description)
+                    VALUES (:date, :category, :amount, :description)
+                """), {"date":date, "category":category, "amount":amount, "description":description})
             
-            conn.commit()
-            conn.close()
             return True
         except Exception as e:
             print(f"Errore nell'aggiungere la spesa: {e}")
@@ -51,17 +56,17 @@ class ExpenseDatabase(IExpenseDatabase):
         """Aggiorna una spesa esistente"""
         try:
             # Validazione categoria
-            if category not in CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
+            if category not in self.CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
                 return False
             
             conn = self.get_connection()
             cursor = conn.cursor()
             
-            cursor.execute("""
+            cursor.execute(f"""
                 UPDATE expenses 
-                SET date = ?, category = ?, amount = ?, description = ?
-                WHERE id = ?
+                SET date = {PLACEHOLDER}, category = {PLACEHOLDER}, amount = {PLACEHOLDER}, description = {PLACEHOLDER}
+                WHERE id = {PLACEHOLDER}
             """, (date, category, amount, description, expense_id))
             
             conn.commit()
@@ -79,7 +84,7 @@ class ExpenseDatabase(IExpenseDatabase):
             conn = self.get_connection()
             cursor = conn.cursor()
             
-            cursor.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+            cursor.execute(f"DELETE FROM expenses WHERE id = {PLACEHOLDER}", (expense_id,))
             
             conn.commit()
             rows_affected = cursor.rowcount
@@ -96,7 +101,7 @@ class ExpenseDatabase(IExpenseDatabase):
             conn = self.get_connection()
             cursor = conn.cursor()
             
-            cursor.execute("SELECT * FROM expenses WHERE id = ?", (expense_id,))
+            cursor.execute(f"SELECT * FROM expenses WHERE id = {PLACEHOLDER}", (expense_id,))
             row = cursor.fetchone()
             
             conn.close()
@@ -117,9 +122,8 @@ class ExpenseDatabase(IExpenseDatabase):
     
     def get_all_expenses(self) -> pd.DataFrame:
         """Recupera tutte le spese come DataFrame"""
-        conn = self.get_connection()
-        df = pd.read_sql_query("SELECT * FROM expenses ORDER BY date DESC", conn)
-        conn.close()
+        engine = self.get_engine()
+        df = pd.read_sql_query("SELECT * FROM expenses ORDER BY date DESC", engine)
         
         if not df.empty:
             df['date'] = pd.to_datetime(df['date'])
@@ -137,9 +141,9 @@ class ExpenseDatabase(IExpenseDatabase):
         else:
             end_date = f"{year}-{month+1:02d}-01"
         
-        query = """
+        query = f"""
             SELECT * FROM expenses 
-            WHERE date >= ? AND date < ?
+            WHERE date >= {PLACEHOLDER} AND date < {PLACEHOLDER}
             ORDER BY date DESC
         """
         
@@ -158,9 +162,9 @@ class ExpenseDatabase(IExpenseDatabase):
         start_date = f"{year}-01-01"
         end_date = f"{year+1}-01-01"
         
-        query = """
+        query = f"""
             SELECT * FROM expenses 
-            WHERE date >= ? AND date < ?
+            WHERE date >= {PLACEHOLDER} AND date < {PLACEHOLDER}
             ORDER BY date DESC
         """
         
@@ -187,9 +191,9 @@ class ExpenseDatabase(IExpenseDatabase):
         else:
             end_str = str(end_date)
         
-        query = """
+        query = f"""
             SELECT * FROM expenses 
-            WHERE date >= ? AND date <= ?
+            WHERE date >= {PLACEHOLDER} AND date <= {PLACEHOLDER}
             ORDER BY date DESC
         """
         
@@ -217,7 +221,7 @@ class ExpenseDatabase(IExpenseDatabase):
                 
                 # Validazione categoria prima dell'inserimento
                 category = str(row['category'])
-                if category not in CATEGORIES:
+                if category not in self.CATEGORIES:
                     if category not in invalid_categories:
                         invalid_categories.append(category)
                     error_count += 1
@@ -248,9 +252,9 @@ class ExpenseDatabase(IExpenseDatabase):
             conn = self.get_connection()
             cursor = conn.cursor()
             
-            cursor.execute("""
+            cursor.execute(f"""
                 INSERT OR REPLACE INTO monthly_targets (category, target_amount, updated_at)
-                VALUES (?, ?, CURRENT_TIMESTAMP)
+                VALUES ({PLACEHOLDER}, {PLACEHOLDER}, CURRENT_TIMESTAMP)
             """, (category, target_amount))
             
             conn.commit()
@@ -288,13 +292,13 @@ class ExpenseDatabase(IExpenseDatabase):
         """Calcola i totali mensili per periodo"""
         conn = self.get_connection()
         
-        query = """
+        query = f"""
             SELECT 
                 strftime('%Y-%m', date) as month,
                 category,
                 SUM(amount) as total
             FROM expenses
-            WHERE date >= ? AND date <= ?
+            WHERE date >= {PLACEHOLDER} AND date <= {PLACEHOLDER}
             GROUP BY month, category
             ORDER BY month
         """
@@ -308,12 +312,12 @@ class ExpenseDatabase(IExpenseDatabase):
         """Calcola i totali mensili complessivi per periodo"""
         conn = self.get_connection()
         
-        query = """
+        query = f"""
             SELECT 
                 strftime('%Y-%m', date) as month,
                 SUM(amount) as total
             FROM expenses
-            WHERE date >= ? AND date <= ?
+            WHERE date >= {PLACEHOLDER} AND date <= {PLACEHOLDER}
             GROUP BY month
             ORDER BY month
         """
@@ -323,7 +327,7 @@ class ExpenseDatabase(IExpenseDatabase):
         
         return df
 
-if __name__ == "__main__":
-    db = ExpenseDatabase()
-    db.get_connection()
+# if __name__ == "__main__":
+db = ExpenseDatabase()
+    # db.get_connection()
 

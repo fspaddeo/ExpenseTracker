@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import db
+from database import neon_db as db
 from enum import Enum
 
 st.header("Inserisci una Nuova Spesa")

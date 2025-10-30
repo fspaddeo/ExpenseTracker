@@ -5,27 +5,27 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Optional
-CATEGORIES = [
-    "Mutuo",
-    "Casa",
-    "Investimenti",
-    "Spese auto",
-    "Svago",
-    "Alimentari",
-    "Viaggi",
-    "Regali",
-    "Salute",
-    "Cane",
-    "Parrucchiere",
-    "Mensa",
-    "Telefono",
-    "Donazione",
-    "Caffè",
-    "Abbigliamento"
-]
+
 
 class IExpenseDatabase(ABC):
-    
+    CATEGORIES = [
+        "Mutuo",
+        "Casa",
+        "Investimenti",
+        "Spese auto",
+        "Svago",
+        "Alimentari",
+        "Viaggi",
+        "Regali",
+        "Salute",
+        "Cane",
+        "Parrucchiere",
+        "Mensa",
+        "Telefono",
+        "Donazione",
+        "Caffè",
+        "Abbigliamento"
+    ]
     @abstractmethod
     def get_connection(self) -> Connection:
         pass

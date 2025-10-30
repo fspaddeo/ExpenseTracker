@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Optional
-from database.expense_database_base import IExpenseDatabase, CATEGORIES
+from database.expense_database_base import IExpenseDatabase
 
 class ExpenseDatabase(IExpenseDatabase):
     """Classe per gestire il database delle spese"""
@@ -49,8 +49,8 @@ class ExpenseDatabase(IExpenseDatabase):
         """Aggiunge una nuova spesa al database"""
         try:
             # Validazione categoria
-            if category not in CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
+            if category not in self.CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
                 return False
             
             conn = self.get_connection()
@@ -72,8 +72,8 @@ class ExpenseDatabase(IExpenseDatabase):
         """Aggiorna una spesa esistente"""
         try:
             # Validazione categoria
-            if category not in CATEGORIES:
-                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(CATEGORIES)}")
+            if category not in self.CATEGORIES:
+                print(f"Errore: categoria '{category}' non valida. Categorie ammesse: {', '.join(self.CATEGORIES)}")
                 return False
             
             conn = self.get_connection()
@@ -238,7 +238,7 @@ class ExpenseDatabase(IExpenseDatabase):
                 
                 # Validazione categoria prima dell'inserimento
                 category = str(row['category'])
-                if category not in CATEGORIES:
+                if category not in self.CATEGORIES:
                     if category not in invalid_categories:
                         invalid_categories.append(category)
                     error_count += 1
