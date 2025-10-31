@@ -29,7 +29,7 @@ class MonthlyTarget(Base):
     id = Column(Integer, primary_key=True)
     category = Column(String(100), unique=True, nullable=False)
     target_amount = Column(Float, nullable=False)
-    updated_at = Column(
+    created_at = Column(
         DateTime,
         default=datetime.now(timezone.utc),
         onupdate=datetime.now(timezone.utc),

@@ -10,7 +10,7 @@ def set_target(session: Session, category: str, target_amount: float) -> bool:
         target = MonthlyTarget(
             category=category,
             target_amount=target_amount,
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
         )
         session.merge(target)  # merge inserisce se non esiste, altrimenti aggiorna
         session.commit()

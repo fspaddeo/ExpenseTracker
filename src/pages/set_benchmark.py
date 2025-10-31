@@ -61,7 +61,7 @@ with st.form("targets_form"):
 
 # Mostra i target attuali
 if current_targets:
-    st.subheader("Target Attuali")
+    st.subheader(f"Target Attuali: Totale €{sum(current_targets.values())}")
 
     targets_display = pd.DataFrame(
         [

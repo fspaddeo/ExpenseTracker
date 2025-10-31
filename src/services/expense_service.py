@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import date
 from database.models import Expense
 from sqlalchemy.orm import Session
 from sqlalchemy import Engine
 from typing import Optional, Dict, Any
 import pandas as pd
 from sqlalchemy import select, insert, func
+from numpy import nan
 
 CATEGORIES = [
     "Mutuo",
@@ -165,7 +166,7 @@ def get_expenses_by_year(engine: Engine, year: int) -> pd.DataFrame:
 
 
 def get_expenses_by_date_range(
-    engine: Engine, start_date: datetime, end_date: datetime
+    engine: Engine, start_date: date, end_date: date
 ) -> pd.DataFrame:
     """Recupera le spese per un range di date personalizzato"""
 
@@ -183,7 +184,7 @@ def get_expenses_by_date_range(
     return df
 
 
-def import_expenses_from_dataframe(session: Session, df: pd.DataFrame) -> tuple:
+def import_expenses_from_dataframe(session: Session, df: pd.DataFrame) -> int:
     """Importa spese da un DataFrame con validazione rigida delle categorie"""
     invalid_categories = set(
         [
@@ -198,8 +199,9 @@ def import_expenses_from_dataframe(session: Session, df: pd.DataFrame) -> tuple:
         )
 
     stmt = insert(Expense)
+    df = df.replace({nan: None})
     data = df.to_dict(orient="records")
-    session.execute(stmt, data)
+    session.execute(stmt, data)  #type: ignore
     session.commit()
 
     return len(df)

@@ -82,7 +82,7 @@ if not all_expenses.empty:
         ]
 
     if num_to_show != "Tutte":
-        filtered_expenses = filtered_expenses.head(num_to_show)
+        filtered_expenses = filtered_expenses.head(num_to_show)  # type: ignore
 
     # Mostra tabella
     st.write(f"**{len(filtered_expenses)}** spese trovate")
@@ -99,9 +99,10 @@ if not all_expenses.empty:
             with col3:
                 st.write(f"💰 €{row['amount']:.2f}")
             with col4:
-                st.write(
-                    f"📝 {row['description'][:50]}{'...' if len(row['description']) > 50 else ''}"
-                )
+                if row["description"]:
+                    st.write(
+                        f"📝 {row['description'][:50]}{'...' if len(row['description']) > 50 else ''}"
+                    )
             with col5:
                 edit_key = f"edit_{row['id']}"
                 if st.button("✏️", key=edit_key, help="Modifica"):
