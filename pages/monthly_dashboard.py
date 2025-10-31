@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 from database.postgres_connection import init_postgres_db
-from src.services.expense_service import (
+from services.expense_service import (
     CATEGORIES,
     get_expenses_by_month,
     get_category_spending,

@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import io
 from database.postgres_connection import init_postgres_db
-from src.services.expense_service import (
+from services.expense_service import (
     CATEGORIES,
     get_all_expenses,
     import_expenses_from_dataframe,

@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
-from src.database.postgres_connection import init_postgres_db
-from src.services.expense_service import (
+from database.postgres_connection import init_postgres_db
+from services.expense_service import (
     CATEGORIES,
     get_monthly_totals,
     get_overall_monthly_totals,

@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import sessionmaker, Session
-from src.database.base import Base
+from database.base import Base
 import streamlit as st
 
 conn_string = f"postgresql+psycopg2://{st.secrets['DB_USER']}:{st.secrets['DB_PASS']}@{st.secrets['DB_HOST']}/{st.secrets['DB_NAME']}?sslmode=require&channel_binding=require"

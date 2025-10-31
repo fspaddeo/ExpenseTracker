@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, Date, DateTime
-from src.database.base import Base
+from database.base import Base
 from typing import Any
 
 

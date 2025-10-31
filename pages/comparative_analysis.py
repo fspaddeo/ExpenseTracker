@@ -6,7 +6,7 @@ from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from database.postgres_connection import init_postgres_db
 
-from src.services.expense_service import (
+from services.expense_service import (
     get_expenses_by_month,
     get_category_spending,
     get_expenses_by_year,
