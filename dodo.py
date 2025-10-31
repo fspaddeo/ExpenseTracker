@@ -7,18 +7,13 @@ def task_format():
     return {
         'actions': ["cd src/", "autopep8 -i *.py"]
     }
-    # """format"""
-    # return
-    # {
-    #     'actions': ["cd src/", "autopep8 -i *.py"],
-    #     'argets': ["hello.txt"],}
 
 
 def task_lint():
     """lint"""
 
     return {
-        'actions': ["flake8 src/"]
+        'actions': ["flake8 src/ --extend-exclude=.cache,.mypy_cache,.venv"]
     }
 
 
