@@ -9,11 +9,11 @@ from services.expense_service import (
     update_expense,
     delete_expense,
 )
+st.set_page_config(page_title="Gestione Spese Personali", page_icon="💰", layout="wide")
 
 pg_engine, pg_session = init_postgres_db()
 
 st.header("Inserisci una Nuova Spesa")
-st.set_page_config(page_title="Gestione Spese Personali", page_icon="💰", layout="wide")
 st.title("Inserisci una Nuova Spesa")
 
 col1, col2 = st.columns(2)
