@@ -201,7 +201,7 @@ def import_expenses_from_dataframe(session: Session, df: pd.DataFrame) -> int:
     stmt = insert(Expense)
     df = df.replace({nan: None})
     data = df.to_dict(orient="records")
-    session.execute(stmt, data)  #type: ignore
+    session.execute(stmt, data)  # type: ignore
     session.commit()
 
     return len(df)
