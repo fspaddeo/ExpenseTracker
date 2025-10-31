@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from database.postgres_connection import init_postgres_db
-from services.expense_service import CATEGORIES
-from services.target_service import get_targets, set_target
+from src.services.expense_service import CATEGORIES
+from src.services.target_service import get_targets, set_target
 
 pg_engine, pg_session = init_postgres_db()
 

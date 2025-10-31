@@ -4,12 +4,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-from models import MESI_ITALIANI, format_month_year
 from database.postgres_connection import init_postgres_db
-from services.expense_service import (
+from src.services.expense_service import (
     CATEGORIES,
     get_expenses_by_month,
     get_category_spending,
+    MESI_ITALIANI,
+    format_month_year
 )
 from services.target_service import get_targets
 

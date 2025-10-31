@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .base import Base
+from src.database.base import Base
 import streamlit as st
 
 sqlite_engine = create_engine(st.secrets["SQLITE_URL"])

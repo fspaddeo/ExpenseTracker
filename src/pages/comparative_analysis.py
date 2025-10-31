@@ -6,13 +6,14 @@ from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from database.postgres_connection import init_postgres_db
 
-from models import format_month_year, MESI_ITALIANI
-from services.expense_service import (
+from src.services.expense_service import (
     get_expenses_by_month,
     get_category_spending,
     get_expenses_by_year,
     get_expenses_by_date_range,
     CATEGORIES,
+    MESI_ITALIANI,
+    format_month_year
 )
 
 pg_engine, pg_session = init_postgres_db()

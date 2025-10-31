@@ -26,6 +26,26 @@ CATEGORIES = [
     "Abbigliamento",
 ]
 
+MESI_ITALIANI = {
+    1: "Gennaio",
+    2: "Febbraio",
+    3: "Marzo",
+    4: "Aprile",
+    5: "Maggio",
+    6: "Giugno",
+    7: "Luglio",
+    8: "Agosto",
+    9: "Settembre",
+    10: "Ottobre",
+    11: "Novembre",
+    12: "Dicembre",
+}
+
+
+def format_month_year(year: int, month: int) -> str:
+    """Formatta mese e anno in italiano"""
+    return f"{MESI_ITALIANI[month]} {year}"
+
 
 def add_expense(
     session: Session, date: str, category: str, amount: float, description: str
