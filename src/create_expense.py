@@ -5,8 +5,11 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
+from database.postgres_connection import init_postgres_db
+from services.expense_service import CATEGORIES, get_all_expenses, add_expense, get_expense_by_id, update_expense, delete_expense
 from enum import Enum
+
+pg_engine, pg_session = init_postgres_db()
 
 st.header("Inserisci una Nuova Spesa")
 st.set_page_config(page_title="Gestione Spese Personali",
@@ -22,7 +25,7 @@ with col1:
                                     value=date.today(),
                                     format="YYYY-MM-DD")
 
-    category = st.selectbox("Categoria", options=db.CATEGORIES)
+    category = st.selectbox("Categoria", options=CATEGORIES)
 
     amount = st.number_input("Importo (€)",
                                 min_value=0.0,
@@ -43,7 +46,7 @@ if st.button("💾 Salva Spesa", type="primary", use_container_width=True):
     elif amount <= 0:
         st.error("⚠️ L'importo deve essere maggiore di zero!")
     else:
-        success = db.add_expense(date=expense_date.strftime('%Y-%m-%d'),
+        success = add_expense(session=pg_session,date=expense_date.strftime('%Y-%m-%d'),
                                     category=category,
                                     amount=amount,
                                     description=description)
@@ -60,14 +63,14 @@ if st.button("💾 Salva Spesa", type="primary", use_container_width=True):
 st.divider()
 st.subheader("✏️ Gestisci Spese Esistenti")
 
-all_expenses = db.get_all_expenses()
+all_expenses = get_all_expenses(pg_engine)
 
 if not all_expenses.empty:
     # Filtri
     col1, col2 = st.columns([2, 1])
     with col1:
         filter_category = st.multiselect("Filtra per categoria",
-                                            options=["Tutte"] + db.CATEGORIES,
+                                            options=["Tutte"] + CATEGORIES,
                                             default=["Tutte"])
     with col2:
         num_to_show = st.selectbox("Numero di spese da mostrare",
@@ -119,7 +122,7 @@ if not all_expenses.empty:
     # Dialogo di modifica
     if 'editing_expense_id' in st.session_state:
         expense_id = st.session_state['editing_expense_id']
-        expense = db.get_expense_by_id(expense_id)
+        expense = get_expense_by_id(session=pg_session, expense_id = expense_id)
 
         if expense:
             st.divider()
@@ -150,11 +153,11 @@ if not all_expenses.empty:
 
                 edit_category = st.selectbox(
                     "Categoria",
-                    options=db.CATEGORIES,
-                    index=db.CATEGORIES.index(
+                    options=CATEGORIES,
+                    index=CATEGORIES.index(
                         st.session_state[f'edit_category_{expense_id}'])
                     if st.session_state[f'edit_category_{expense_id}']
-                    in db.CATEGORIES else 0,
+                    in CATEGORIES else 0,
                     key=f"category_input_{expense_id}")
                 st.session_state[
                     f'edit_category_{expense_id}'] = edit_category
@@ -194,7 +197,8 @@ if not all_expenses.empty:
                         st.error(
                             "⚠️ L'importo deve essere maggiore di zero!")
                     else:
-                        success = db.update_expense(
+                        success = update_expense(
+                            session=pg_session,
                             expense_id=expense_id,
                             date=st.
                             session_state[f'edit_date_{expense_id}'].
@@ -242,7 +246,7 @@ if not all_expenses.empty:
     # Dialogo di conferma eliminazione
     if 'deleting_expense_id' in st.session_state:
         expense_id = st.session_state['deleting_expense_id']
-        expense = db.get_expense_by_id(expense_id)
+        expense = get_expense_by_id(session=pg_session, expense_id = expense_id)
 
         if expense:
             st.divider()
@@ -258,7 +262,7 @@ if not all_expenses.empty:
                 if st.button("🗑️ Sì, Elimina",
                                 type="primary",
                                 use_container_width=True):
-                    if db.delete_expense(expense_id):
+                    if delete_expense(session=pg_session, expense_id = expense_id):
                         st.success("✅ Spesa eliminata con successo!")
                         del st.session_state['deleting_expense_id']
                         st.rerun()

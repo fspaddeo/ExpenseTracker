@@ -5,9 +5,13 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
-from enum import Enum
 
+from models import MESI_ITALIANI, format_month_year
+from database.postgres_connection import init_postgres_db
+from services.expense_service import CATEGORIES, get_monthly_totals, get_overall_monthly_totals, get_expenses_by_month, get_category_spending, get_expense_by_id, update_expense, delete_expense
+from services.target_service import get_targets, set_target
+
+pg_engine, pg_session = init_postgres_db()
 st.header("Andamento Temporale delle Spese")
 st.set_page_config(page_title="Andamento Temporale delle Spese",
     page_icon="💰",
@@ -39,10 +43,10 @@ else:  # Personalizzato
         end_date = st.date_input("Data Fine", value=date.today())
 
 # Recupera i dati
-monthly_totals = db.get_monthly_totals(start_date.strftime('%Y-%m-%d'),
+monthly_totals = get_monthly_totals(pg_session, start_date.strftime('%Y-%m-%d'),
                                         end_date.strftime('%Y-%m-%d'))
 
-overall_totals = db.get_overall_monthly_totals(
+overall_totals = get_overall_monthly_totals(pg_session,
     start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
 if not monthly_totals.empty:
@@ -269,7 +273,7 @@ if not monthly_totals.empty:
         st.subheader("Previsioni per Categoria")
 
         category_forecasts = []
-        for category in db.CATEGORIES:
+        for category in CATEGORIES:
             category_data = monthly_totals[monthly_totals['category'] ==
                                             category]
             if not category_data.empty and len(category_data) >= 3:

@@ -5,9 +5,12 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
+from models import MESI_ITALIANI, format_month_year
+from database.postgres_connection import init_postgres_db
+from services.expense_service import CATEGORIES, get_expenses_by_month, get_category_spending, get_expense_by_id, update_expense, delete_expense
+from services.target_service import get_targets, set_target
 
-from enum import Enum
+pg_engine, pg_session = init_postgres_db()
 
 st.header("Imposta Target Mensili per Categoria")
 st.set_page_config(page_title="Imposta Target Mensili per Categoria",
@@ -21,7 +24,7 @@ st.info(
 )
 
 # Recupera i target esistenti
-current_targets = db.get_targets()
+current_targets = get_targets(pg_session)
 
 # Form per impostare i target
 with st.form("targets_form"):
@@ -32,7 +35,7 @@ with st.form("targets_form"):
     # Crea due colonne per organizzare meglio i campi
     col1, col2 = st.columns(2)
 
-    for i, category in enumerate(db.CATEGORIES):
+    for i, category in enumerate(CATEGORIES):
         current_value = current_targets.get(category, 0.0)
 
         with col1 if i % 2 == 0 else col2:
@@ -52,7 +55,7 @@ with st.form("targets_form"):
         success_count = 0
         for category, target_amount in targets_data.items():
             if target_amount > 0:
-                if db.set_target(category, target_amount):
+                if set_target(pg_session, category, target_amount):
                     success_count += 1
 
         if success_count > 0:

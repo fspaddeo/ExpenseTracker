@@ -5,10 +5,12 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
+from database.postgres_connection import init_postgres_db
+from services.expense_service import CATEGORIES, get_all_expenses, import_expenses_from_dataframe, get_expense_by_id, update_expense, delete_expense
 
 from enum import Enum
 
+pg_engine, pg_session = init_postgres_db()
 
 st.header("Importa ed Esporta Dati")
 st.set_page_config(page_title="Importa ed Esporta Dati",
@@ -20,7 +22,7 @@ st.title("Importa ed Esporta Dati")
 # Sezione Esportazione
 st.subheader("📤 Esporta le Tue Spese")
 
-all_expenses_export = db.get_all_expenses()
+all_expenses_export = get_all_expenses(pg_engine)
 
 if not all_expenses_export.empty:
     # Prepara i dati per l'esportazione
@@ -99,7 +101,7 @@ with st.expander("📄 Visualizza esempio di formato corretto"):
 
 # Mostra le categorie valide
 with st.expander("📋 Lista categorie valide"):
-    st.write(", ".join(db.CATEGORIES))
+    st.write(", ".join(CATEGORIES))
 
 # Upload file
 uploaded_file = st.file_uploader(
@@ -141,14 +143,14 @@ if uploaded_file is not None:
                 )
         else:
             # Validazione categorie
-            invalid_categories = df[~df['category'].isin(db.CATEGORIES)][
+            invalid_categories = df[~df['category'].isin(CATEGORIES)][
                 'category'].unique()
 
             if len(invalid_categories) > 0:
                 st.warning(
                     f"⚠️ Attenzione: alcune categorie non sono valide: {', '.join(invalid_categories)}"
                 )
-                st.write("Categorie valide:", ", ".join(db.CATEGORIES))
+                st.write("Categorie valide:", ", ".join(CATEGORIES))
             
             
 
@@ -164,16 +166,13 @@ if uploaded_file is not None:
                             type="primary",
                             use_container_width=True):
                 with st.spinner("Importazione in corso..."):
-                    success_count, error_count = db.import_expenses_from_dataframe(
+                    success_count = import_expenses_from_dataframe( pg_session,
                         df)
 
                 if success_count > 0:
                     st.success(
                         f"✅ {success_count} spese importate con successo!")
-                    if error_count > 0:
-                        st.warning(
-                            f"⚠️ {error_count} righe non importate a causa di errori."
-                        )
+
                     st.balloons()
                 else:
                     st.error(

@@ -5,10 +5,14 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
+from database.postgres_connection import init_postgres_db
 
 from enum import Enum
 from models import format_month_year, MESI_ITALIANI
+from services.expense_service import get_expenses_by_month, get_category_spending, get_expenses_by_year, get_expenses_by_date_range, CATEGORIES
+
+pg_engine, pg_session = init_postgres_db()
+
 
 st.header("Analisi Comparative tra Periodi")
 st.set_page_config(page_title="Analisi Comparative tra Periodi",
@@ -60,10 +64,10 @@ if comparison_type == "Mese vs Mese":
                                 key="month2")
 
     # Recupera i dati per entrambi i periodi
-    expenses1 = db.get_expenses_by_month(year1, month1)
-    expenses2 = db.get_expenses_by_month(year2, month2)
-    category_spending1 = db.get_category_spending(year1, month1)
-    category_spending2 = db.get_category_spending(year2, month2)
+    expenses1 = get_expenses_by_month(pg_engine, year1, month1)
+    expenses2 = get_expenses_by_month(pg_engine, year2, month2)
+    category_spending1 = get_category_spending(pg_engine, year1, month1)
+    category_spending2 = get_category_spending(pg_engine, year2, month2)
 
     period1_label = format_month_year(year1, month1)
     period2_label = format_month_year(year2, month2)
@@ -90,8 +94,8 @@ elif comparison_type == "Anno vs Anno":
                                 key="year2_full")
 
     # Recupera i dati per entrambi gli anni
-    expenses1 = db.get_expenses_by_year(year1)
-    expenses2 = db.get_expenses_by_year(year2)
+    expenses1 = get_expenses_by_year(pg_engine,year1)
+    expenses2 = get_expenses_by_year(pg_engine,year2)
 
     # Calcola totali per categoria
     if not expenses1.empty:
@@ -139,8 +143,8 @@ else:  # Periodo Personalizzato
                                 format="YYYY-MM-DD")
 
     # Recupera i dati per i periodi personalizzati
-    expenses1 = db.get_expenses_by_date_range(start1, end1)
-    expenses2 = db.get_expenses_by_date_range(start2, end2)
+    expenses1 = get_expenses_by_date_range(pg_engine, start1, end1)
+    expenses2 = get_expenses_by_date_range(pg_engine, start2, end2)
 
     # Calcola totali per categoria
     if not expenses1.empty:
@@ -200,7 +204,7 @@ if not expenses1.empty or not expenses2.empty:
 
     # Prepara dati per il confronto
     comparison_data = []
-    for category in db.CATEGORIES:
+    for category in CATEGORIES:
         spent1 = category_spending1[category_spending1['category'] ==
                                     category]['total'].sum()
         spent2 = category_spending2[category_spending2['category'] ==
@@ -227,7 +231,7 @@ if not expenses1.empty or not expenses2.empty:
 
         # Grafico a barre comparativo
         chart_data = []
-        for category in db.CATEGORIES:
+        for category in CATEGORIES:
             spent1 = category_spending1[category_spending1['category'] ==
                                         category]['total'].sum()
             spent2 = category_spending2[category_spending2['category'] ==
@@ -265,7 +269,7 @@ if not expenses1.empty or not expenses2.empty:
             st.subheader("Variazioni Percentuali per Categoria")
 
             variation_data = []
-            for category in db.CATEGORIES:
+            for category in CATEGORIES:
                 spent1 = category_spending1[category_spending1['category']
                                             == category]['total'].sum()
                 spent2 = category_spending2[category_spending2['category']

@@ -5,11 +5,14 @@ import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import io
-from database import neon_db as db
 
 from enum import Enum
 from models import MESI_ITALIANI, format_month_year
+from database.postgres_connection import init_postgres_db
+from services.expense_service import CATEGORIES, get_expenses_by_month, get_category_spending, get_expense_by_id, update_expense, delete_expense
+from services.target_service import get_targets
 
+pg_engine, pg_session = init_postgres_db()
 st.header("Dashboard Mensile")
 st.set_page_config(page_title="Dashboard Mensile",
     page_icon="💰",
@@ -34,9 +37,9 @@ with col2:
                                     index=datetime.now().month - 1)
 
 # Recupera i dati del mese
-monthly_expenses = db.get_expenses_by_month(selected_year, selected_month)
-category_spending = db.get_category_spending(selected_year, selected_month)
-targets = db.get_targets()
+monthly_expenses = get_expenses_by_month(pg_engine, selected_year, selected_month)
+category_spending = get_category_spending(pg_engine, selected_year, selected_month)
+targets = get_targets(pg_session)
 
 # Statistiche generali
 st.subheader(
@@ -54,7 +57,7 @@ if not monthly_expenses.empty:
     has_any_targets = total_target > 0
 
     if targets:
-        for category in db.CATEGORIES:
+        for category in CATEGORIES:
             spent = category_spending[category_spending['category'] ==
                                         category]['total'].sum()
             target = targets.get(category, 0)
@@ -124,7 +127,7 @@ if not monthly_expenses.empty:
     if targets:
         comparison_data = []
 
-        for category in db.CATEGORIES:
+        for category in CATEGORIES:
             spent = category_spending[category_spending['category'] ==
                                         category]['total'].sum()
             target = targets.get(category, 0)
@@ -154,7 +157,7 @@ if not monthly_expenses.empty:
 
             # Grafico a barre confronto
             chart_data = []
-            for category in db.CATEGORIES:
+            for category in CATEGORIES:
                 spent = category_spending[category_spending['category'] ==
                                             category]['total'].sum()
                 target = targets.get(category, 0)
