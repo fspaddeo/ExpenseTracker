@@ -1,14 +1,14 @@
 import streamlit as st
 from datetime import datetime, date
-from database.postgres_connection import init_postgres_db
-from services.expense_service import (
-    CATEGORIES,
-    get_all_expenses,
-    add_expense,
-    get_expense_by_id,
-    update_expense,
-    delete_expense,
-)
+# from database.postgres_connection import init_postgres_db
+# from services.expense_service import (
+#     CATEGORIES,
+#     get_all_expenses,
+#     add_expense,
+#     get_expense_by_id,
+#     update_expense,
+#     delete_expense,
+# )
 st.set_page_config(page_title="Gestione Spese Personali", page_icon="💰", layout="wide")
 
 # pg_engine, pg_session = init_postgres_db()
