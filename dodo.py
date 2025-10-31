@@ -5,7 +5,8 @@ def task_format():
     """format"""
 
     return {
-        'actions': ["cd src/", "autopep8 -i *.py"]
+        # 'actions': ["cd src/", "autopep8 -i *.py"]
+        'actions': ["black src/"]
     }
 
 

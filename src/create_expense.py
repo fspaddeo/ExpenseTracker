@@ -1,36 +1,36 @@
 import streamlit as st
 from datetime import datetime, date
 from database.postgres_connection import init_postgres_db
-from services.expense_service import CATEGORIES, get_all_expenses, add_expense, get_expense_by_id, update_expense, delete_expense
+from services.expense_service import (
+    CATEGORIES,
+    get_all_expenses,
+    add_expense,
+    get_expense_by_id,
+    update_expense,
+    delete_expense,
+)
 
 pg_engine, pg_session = init_postgres_db()
 
 st.header("Inserisci una Nuova Spesa")
-st.set_page_config(page_title="Gestione Spese Personali",
-                page_icon="💰",
-                layout="wide"
-)
+st.set_page_config(page_title="Gestione Spese Personali", page_icon="💰", layout="wide")
 st.title("Inserisci una Nuova Spesa")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    expense_date = st.date_input("Data",
-                                    value=date.today(),
-                                    format="YYYY-MM-DD")
+    expense_date = st.date_input("Data", value=date.today(), format="YYYY-MM-DD")
 
     category = st.selectbox("Categoria", options=CATEGORIES)
 
-    amount = st.number_input("Importo (€)",
-                                min_value=0.0,
-                                step=0.01,
-                                format="%.2f")
+    amount = st.number_input("Importo (€)", min_value=0.0, step=0.01, format="%.2f")
 
 with col2:
     description = st.text_area(
         "Descrizione *",
         height=150,
-        placeholder="Inserisci una descrizione della spesa...")
+        placeholder="Inserisci una descrizione della spesa...",
+    )
 
 if st.button("💾 Salva Spesa", type="primary", use_container_width=True):
     if not expense_date:
@@ -40,10 +40,13 @@ if st.button("💾 Salva Spesa", type="primary", use_container_width=True):
     elif amount <= 0:
         st.error("⚠️ L'importo deve essere maggiore di zero!")
     else:
-        success = add_expense(session=pg_session,date=expense_date.strftime('%Y-%m-%d'),
-                                    category=category,
-                                    amount=amount,
-                                    description=description)
+        success = add_expense(
+            session=pg_session,
+            date=expense_date.strftime("%Y-%m-%d"),
+            category=category,
+            amount=amount,
+            description=description,
+        )
 
         if success:
             st.success(
@@ -63,19 +66,20 @@ if not all_expenses.empty:
     # Filtri
     col1, col2 = st.columns([2, 1])
     with col1:
-        filter_category = st.multiselect("Filtra per categoria",
-                                            options=["Tutte"] + CATEGORIES,
-                                            default=["Tutte"])
+        filter_category = st.multiselect(
+            "Filtra per categoria", options=["Tutte"] + CATEGORIES, default=["Tutte"]
+        )
     with col2:
-        num_to_show = st.selectbox("Numero di spese da mostrare",
-                                    options=[10, 25, 50, 100, "Tutte"],
-                                    index=0)
+        num_to_show = st.selectbox(
+            "Numero di spese da mostrare", options=[10, 25, 50, 100, "Tutte"], index=0
+        )
 
     # Applica filtri
     filtered_expenses = all_expenses.copy()
     if "Tutte" not in filter_category and filter_category:
         filtered_expenses = filtered_expenses[
-            filtered_expenses['category'].isin(filter_category)]
+            filtered_expenses["category"].isin(filter_category)
+        ]
 
     if num_to_show != "Tutte":
         filtered_expenses = filtered_expenses.head(num_to_show)
@@ -86,8 +90,7 @@ if not all_expenses.empty:
     # Crea una tabella con azioni
     for idx, row in filtered_expenses.iterrows():
         with st.container():
-            col1, col2, col3, col4, col5, col6 = st.columns(
-                [1.5, 1.5, 1, 2, 0.8, 0.8])
+            col1, col2, col3, col4, col5, col6 = st.columns([1.5, 1.5, 1, 2, 0.8, 0.8])
 
             with col1:
                 st.write(f"📅 {row['date'].strftime('%d/%m/%Y')}")
@@ -102,150 +105,149 @@ if not all_expenses.empty:
             with col5:
                 edit_key = f"edit_{row['id']}"
                 if st.button("✏️", key=edit_key, help="Modifica"):
-                    st.session_state['editing_expense_id'] = row['id']
+                    st.session_state["editing_expense_id"] = row["id"]
                     st.rerun()
             with col6:
                 delete_key = f"delete_{row['id']}"
-                if st.button("🗑️",
-                                key=delete_key,
-                                help="Elimina",
-                                type="secondary"):
-                    st.session_state['deleting_expense_id'] = row['id']
+                if st.button("🗑️", key=delete_key, help="Elimina", type="secondary"):
+                    st.session_state["deleting_expense_id"] = row["id"]
                     st.rerun()
 
     # Dialogo di modifica
-    if 'editing_expense_id' in st.session_state:
-        expense_id = st.session_state['editing_expense_id']
-        expense = get_expense_by_id(session=pg_session, expense_id = expense_id)
+    if "editing_expense_id" in st.session_state:
+        expense_id = st.session_state["editing_expense_id"]
+        expense = get_expense_by_id(session=pg_session, expense_id=expense_id)
 
         if expense:
             st.divider()
             st.subheader(f"✏️ Modifica Spesa #{expense_id}")
 
             # Inizializza i valori in session_state se non esistono
-            if f'edit_date_{expense_id}' not in st.session_state:
-                st.session_state[
-                    f'edit_date_{expense_id}'] = datetime.strptime(
-                        expense['date'], '%Y-%m-%d').date()
-                st.session_state[f'edit_category_{expense_id}'] = expense[
-                    'category']
-                st.session_state[f'edit_amount_{expense_id}'] = float(
-                    expense['amount'])
-                st.session_state[
-                    f'edit_description_{expense_id}'] = expense[
-                        'description']
+            if f"edit_date_{expense_id}" not in st.session_state:
+                st.session_state[f"edit_date_{expense_id}"] = datetime.strptime(
+                    expense["date"], "%Y-%m-%d"
+                ).date()
+                st.session_state[f"edit_category_{expense_id}"] = expense["category"]
+                st.session_state[f"edit_amount_{expense_id}"] = float(expense["amount"])
+                st.session_state[f"edit_description_{expense_id}"] = expense[
+                    "description"
+                ]
 
             col1, col2 = st.columns(2)
 
             with col1:
                 edit_date = st.date_input(
                     "Data",
-                    value=st.session_state[f'edit_date_{expense_id}'],
+                    value=st.session_state[f"edit_date_{expense_id}"],
                     format="YYYY-MM-DD",
-                    key=f"date_input_{expense_id}")
-                st.session_state[f'edit_date_{expense_id}'] = edit_date
+                    key=f"date_input_{expense_id}",
+                )
+                st.session_state[f"edit_date_{expense_id}"] = edit_date
 
                 edit_category = st.selectbox(
                     "Categoria",
                     options=CATEGORIES,
-                    index=CATEGORIES.index(
-                        st.session_state[f'edit_category_{expense_id}'])
-                    if st.session_state[f'edit_category_{expense_id}']
-                    in CATEGORIES else 0,
-                    key=f"category_input_{expense_id}")
-                st.session_state[
-                    f'edit_category_{expense_id}'] = edit_category
+                    index=(
+                        CATEGORIES.index(
+                            st.session_state[f"edit_category_{expense_id}"]
+                        )
+                        if st.session_state[f"edit_category_{expense_id}"] in CATEGORIES
+                        else 0
+                    ),
+                    key=f"category_input_{expense_id}",
+                )
+                st.session_state[f"edit_category_{expense_id}"] = edit_category
 
                 edit_amount = st.number_input(
                     "Importo (€)",
                     min_value=0.01,
-                    value=st.session_state[f'edit_amount_{expense_id}'],
+                    value=st.session_state[f"edit_amount_{expense_id}"],
                     step=0.01,
                     format="%.2f",
-                    key=f"amount_input_{expense_id}")
-                st.session_state[f'edit_amount_{expense_id}'] = edit_amount
+                    key=f"amount_input_{expense_id}",
+                )
+                st.session_state[f"edit_amount_{expense_id}"] = edit_amount
 
             with col2:
                 edit_description = st.text_area(
                     "Descrizione *",
-                    value=st.
-                    session_state[f'edit_description_{expense_id}'],
+                    value=st.session_state[f"edit_description_{expense_id}"],
                     height=150,
-                    key=f"description_input_{expense_id}")
-                st.session_state[
-                    f'edit_description_{expense_id}'] = edit_description
+                    key=f"description_input_{expense_id}",
+                )
+                st.session_state[f"edit_description_{expense_id}"] = edit_description
 
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("💾 Salva Modifiche",
-                                type="primary",
-                                use_container_width=True,
-                                key=f"save_btn_{expense_id}"):
-                    if not st.session_state[
-                            f'edit_description_{expense_id}'] or st.session_state[
-                                f'edit_description_{expense_id}'].strip(
-                                ) == "":
+                if st.button(
+                    "💾 Salva Modifiche",
+                    type="primary",
+                    use_container_width=True,
+                    key=f"save_btn_{expense_id}",
+                ):
+                    if (
+                        not st.session_state[f"edit_description_{expense_id}"]
+                        or st.session_state[f"edit_description_{expense_id}"].strip()
+                        == ""
+                    ):
                         st.error("⚠️ La descrizione è obbligatoria!")
-                    elif st.session_state[
-                            f'edit_amount_{expense_id}'] <= 0:
-                        st.error(
-                            "⚠️ L'importo deve essere maggiore di zero!")
+                    elif st.session_state[f"edit_amount_{expense_id}"] <= 0:
+                        st.error("⚠️ L'importo deve essere maggiore di zero!")
                     else:
                         success = update_expense(
                             session=pg_session,
                             expense_id=expense_id,
-                            date=st.
-                            session_state[f'edit_date_{expense_id}'].
-                            strftime('%Y-%m-%d'),
-                            category=st.
-                            session_state[f'edit_category_{expense_id}'],
-                            amount=st.
-                            session_state[f'edit_amount_{expense_id}'],
+                            date=st.session_state[f"edit_date_{expense_id}"].strftime(
+                                "%Y-%m-%d"
+                            ),
+                            category=st.session_state[f"edit_category_{expense_id}"],
+                            amount=st.session_state[f"edit_amount_{expense_id}"],
                             description=st.session_state[
-                                f'edit_description_{expense_id}'])
+                                f"edit_description_{expense_id}"
+                            ],
+                        )
 
                         if success:
                             st.success("✅ Spesa aggiornata con successo!")
                             # Pulizia session state
                             for key in [
-                                    f'edit_date_{expense_id}',
-                                    f'edit_category_{expense_id}',
-                                    f'edit_amount_{expense_id}',
-                                    f'edit_description_{expense_id}'
+                                f"edit_date_{expense_id}",
+                                f"edit_category_{expense_id}",
+                                f"edit_amount_{expense_id}",
+                                f"edit_description_{expense_id}",
                             ]:
                                 if key in st.session_state:
                                     del st.session_state[key]
-                            del st.session_state['editing_expense_id']
+                            del st.session_state["editing_expense_id"]
                             st.rerun()
                         else:
-                            st.error(
-                                "❌ Errore nell'aggiornare la spesa. Riprova."
-                            )
+                            st.error("❌ Errore nell'aggiornare la spesa. Riprova.")
             with col2:
-                if st.button("❌ Annulla",
-                                use_container_width=True,
-                                key=f"cancel_btn_{expense_id}"):
+                if st.button(
+                    "❌ Annulla",
+                    use_container_width=True,
+                    key=f"cancel_btn_{expense_id}",
+                ):
                     # Pulizia session state
                     for key in [
-                            f'edit_date_{expense_id}',
-                            f'edit_category_{expense_id}',
-                            f'edit_amount_{expense_id}',
-                            f'edit_description_{expense_id}'
+                        f"edit_date_{expense_id}",
+                        f"edit_category_{expense_id}",
+                        f"edit_amount_{expense_id}",
+                        f"edit_description_{expense_id}",
                     ]:
                         if key in st.session_state:
                             del st.session_state[key]
-                    del st.session_state['editing_expense_id']
+                    del st.session_state["editing_expense_id"]
                     st.rerun()
 
     # Dialogo di conferma eliminazione
-    if 'deleting_expense_id' in st.session_state:
-        expense_id = st.session_state['deleting_expense_id']
-        expense = get_expense_by_id(session=pg_session, expense_id = expense_id)
+    if "deleting_expense_id" in st.session_state:
+        expense_id = st.session_state["deleting_expense_id"]
+        expense = get_expense_by_id(session=pg_session, expense_id=expense_id)
 
         if expense:
             st.divider()
-            st.warning(
-                f"⚠️ **Sei sicuro di voler eliminare questa spesa?**")
+            st.warning("⚠️ **Sei sicuro di voler eliminare questa spesa?**")
             st.write(f"**Data:** {expense['date']}")
             st.write(f"**Categoria:** {expense['category']}")
             st.write(f"**Importo:** €{expense['amount']:.2f}")
@@ -253,18 +255,16 @@ if not all_expenses.empty:
 
             col1, col2, col3 = st.columns([1, 1, 2])
             with col1:
-                if st.button("🗑️ Sì, Elimina",
-                                type="primary",
-                                use_container_width=True):
-                    if delete_expense(session=pg_session, expense_id = expense_id):
+                if st.button("🗑️ Sì, Elimina", type="primary", use_container_width=True):
+                    if delete_expense(session=pg_session, expense_id=expense_id):
                         st.success("✅ Spesa eliminata con successo!")
-                        del st.session_state['deleting_expense_id']
+                        del st.session_state["deleting_expense_id"]
                         st.rerun()
                     else:
                         st.error("❌ Errore nell'eliminare la spesa.")
             with col2:
                 if st.button("❌ Annulla", use_container_width=True):
-                    del st.session_state['deleting_expense_id']
+                    del st.session_state["deleting_expense_id"]
                     st.rerun()
 else:
     st.info("Nessuna spesa registrata ancora.")

@@ -1,11 +1,14 @@
 from enum import Enum
+
+
 class AppPages(Enum):
     CreateExpense = "📝 Inserisci Spesa"
     MonthlyDashboard = "📊 Dashboard Mensile"
     TimeTrend = "📈 Andamento Temporale"
-    ComparativeAnalysis = "🔄 Analisi Comparative" 
+    ComparativeAnalysis = "🔄 Analisi Comparative"
     SetBenchmark = "🎯 Imposta Target"
     ImportData = "📥 Importa Dati"
+
 
 # Dizionario per la traduzione dei mesi in italiano
 MESI_ITALIANI = {
@@ -20,7 +23,7 @@ MESI_ITALIANI = {
     9: "Settembre",
     10: "Ottobre",
     11: "Novembre",
-    12: "Dicembre"
+    12: "Dicembre",
 }
 
 

@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, DateTime
 from .base import Base
 from typing import Any
 
+
 class Expense(Base):
     __tablename__ = "expenses"
 
@@ -12,7 +13,7 @@ class Expense(Base):
     amount = Column(Float, nullable=False)
     description = Column(String(255))
 
-    def to_dict(self) -> dict[str,Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "date": self.date.isoformat() if self.date else None,
@@ -21,10 +22,15 @@ class Expense(Base):
             "description": self.description,
         }
 
+
 class MonthlyTarget(Base):
     __tablename__ = "monthly_targets"
 
     id = Column(Integer, primary_key=True)
     category = Column(String(100), unique=True, nullable=False)
     target_amount = Column(Float, nullable=False)
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
+    )

@@ -8,9 +8,8 @@ from services.target_service import get_targets, set_target
 pg_engine, pg_session = init_postgres_db()
 
 st.header("Imposta Target Mensili per Categoria")
-st.set_page_config(page_title="Imposta Target Mensili per Categoria",
-    page_icon="💰",
-    layout="wide"
+st.set_page_config(
+    page_title="Imposta Target Mensili per Categoria", page_icon="💰", layout="wide"
 )
 st.title("Imposta Target Mensili per Categoria")
 
@@ -40,11 +39,12 @@ with st.form("targets_form"):
                 value=current_value,
                 step=10.0,
                 format="%.2f",
-                key=f"target_{category}")
+                key=f"target_{category}",
+            )
 
-    submitted = st.form_submit_button("💾 Salva Tutti i Target",
-                                        type="primary",
-                                        use_container_width=True)
+    submitted = st.form_submit_button(
+        "💾 Salva Tutti i Target", type="primary", use_container_width=True
+    )
 
     if submitted:
         success_count = 0
@@ -57,31 +57,32 @@ with st.form("targets_form"):
             st.success(f"✅ {success_count} target salvati con successo!")
             st.rerun()
         else:
-            st.warning(
-                "⚠️ Nessun target impostato (tutti i valori sono zero).")
+            st.warning("⚠️ Nessun target impostato (tutti i valori sono zero).")
 
 # Mostra i target attuali
 if current_targets:
     st.subheader("Target Attuali")
 
-    targets_display = pd.DataFrame([{
-        'Categoria': cat,
-        'Target Mensile': f"€{amount:.2f}"
-    } for cat, amount in current_targets.items()])
-    targets_display = targets_display.sort_values('Categoria')
+    targets_display = pd.DataFrame(
+        [
+            {"Categoria": cat, "Target Mensile": f"€{amount:.2f}"}
+            for cat, amount in current_targets.items()
+        ]
+    )
+    targets_display = targets_display.sort_values("Categoria")
 
-    st.dataframe(targets_display,
-                    use_container_width=True,
-                    hide_index=True)
+    st.dataframe(targets_display, use_container_width=True, hide_index=True)
 
     # Grafico a barre dei target
-    fig_targets = px.bar(pd.DataFrame([{
-        'Categoria': cat,
-        'Target': amount
-    } for cat, amount in current_targets.items()
-                                        ]).sort_values('Target',
-                                                        ascending=False),
-                            x='Categoria',
-                            y='Target',
-                            title="Visualizzazione Target Mensili")
+    fig_targets = px.bar(
+        pd.DataFrame(
+            [
+                {"Categoria": cat, "Target": amount}
+                for cat, amount in current_targets.items()
+            ]
+        ).sort_values("Target", ascending=False),
+        x="Categoria",
+        y="Target",
+        title="Visualizzazione Target Mensili",
+    )
     st.plotly_chart(fig_targets, use_container_width=True)
