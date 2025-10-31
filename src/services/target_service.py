@@ -1,10 +1,7 @@
 from datetime import datetime, timezone
 from database.models import MonthlyTarget
 from sqlalchemy.orm import Session
-from sqlalchemy import Engine
-from typing import Optional, Dict,Any
-import pandas as pd
-from sqlalchemy import select, insert
+from typing import Dict
 
 def set_target(session:Session, category: str, target_amount: float) -> bool:
     """Imposta o aggiorna il target mensile per una categoria"""

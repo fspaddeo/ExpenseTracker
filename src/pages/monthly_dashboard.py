@@ -2,14 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
-import io
+from datetime import datetime
 
-from enum import Enum
 from models import MESI_ITALIANI, format_month_year
 from database.postgres_connection import init_postgres_db
-from services.expense_service import CATEGORIES, get_expenses_by_month, get_category_spending, get_expense_by_id, update_expense, delete_expense
+from services.expense_service import CATEGORIES, get_expenses_by_month, get_category_spending
 from services.target_service import get_targets
 
 pg_engine, pg_session = init_postgres_db()

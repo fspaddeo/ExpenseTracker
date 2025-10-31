@@ -4,10 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-import io
 from database.postgres_connection import init_postgres_db
 
-from enum import Enum
 from models import format_month_year, MESI_ITALIANI
 from services.expense_service import get_expenses_by_month, get_category_spending, get_expenses_by_year, get_expenses_by_date_range, CATEGORIES
 

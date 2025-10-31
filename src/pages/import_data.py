@@ -1,14 +1,10 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
+from datetime import datetime
 import io
 from database.postgres_connection import init_postgres_db
-from services.expense_service import CATEGORIES, get_all_expenses, import_expenses_from_dataframe, get_expense_by_id, update_expense, delete_expense
+from services.expense_service import CATEGORIES, get_all_expenses, import_expenses_from_dataframe
 
-from enum import Enum
 
 pg_engine, pg_session = init_postgres_db()
 
