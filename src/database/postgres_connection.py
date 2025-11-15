@@ -6,15 +6,15 @@ import os
 from streamlit.runtime.secrets import StreamlitSecretNotFoundError
 
 try:
-    db_user = st.secrets['DB_USER']
-    db_pass = st.secrets['DB_PASS']
-    db_host = st.secrets['DB_HOST']
-    db_name = st.secrets['DB_NAME']
+    db_user = st.secrets["DB_USER"]
+    db_pass = st.secrets["DB_PASS"]
+    db_host = st.secrets["DB_HOST"]
+    db_name = st.secrets["DB_NAME"]
 except StreamlitSecretNotFoundError:
-    db_user = os.getenv('DB_USER')
-    db_pass = os.getenv('DB_PASS')
-    db_host = os.getenv('DB_HOST')
-    db_name = os.getenv('DB_NAME')
+    db_user = os.getenv("DB_USER")
+    db_pass = os.getenv("DB_PASS")
+    db_host = os.getenv("DB_HOST")
+    db_name = os.getenv("DB_NAME")
 
 
 conn_string = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}/{db_name}?sslmode=require&channel_binding=require"
