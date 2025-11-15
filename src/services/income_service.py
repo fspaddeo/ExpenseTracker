@@ -22,7 +22,7 @@ def set_income(session: Session, amount: float, date: date, account_id: int) -> 
         return False
 
 
-def get_income(session: Session, account_id: int, year:int, month: int) -> Dict[str, float]:
+def get_income(session: Session, account_id: int, year:int, month: int) -> Income:
     """Recupera tutti i target mensili"""
     stmt = select(Income).where(and_(extract('year', Income.date) == year,
             extract('month', Income.date) == month), Income.account_id == account_id)

@@ -6,10 +6,10 @@ import os
 from streamlit.runtime.secrets import StreamlitSecretNotFoundError
 
 try:
-    db_user = st.secrets["DB_USER"]
-    db_pass = st.secrets["DB_PASS"]
-    db_host = st.secrets["DB_HOST"]
-    db_name = st.secrets["DB_NAME"]
+    db_user = st.secrets["postgres"]["DB_USER"]
+    db_pass = st.secrets["postgres"]["DB_PASS"]
+    db_host = st.secrets["postgres"]["DB_HOST"]
+    db_name = st.secrets["postgres"]["DB_NAME"]
 except StreamlitSecretNotFoundError:
     db_user = os.getenv("DB_USER")
     db_pass = os.getenv("DB_PASS")

@@ -12,6 +12,7 @@ from services.expense_service import (
     get_category_spending,
 )
 from services.target_service import get_targets
+from services.income_service import get_income
 
 pg_engine, pg_session = init_postgres_db()
 st.header("Dashboard Mensile")
@@ -40,12 +41,15 @@ with col2:
 monthly_expenses = get_expenses_by_month(pg_engine, selected_year, selected_month)
 category_spending = get_category_spending(pg_engine, selected_year, selected_month)
 targets = get_targets(pg_session)
+income = get_income(pg_session, 1, selected_year, selected_month)
+
 
 # Statistiche generali
 st.subheader(f"📅 Riepilogo {format_month_year(selected_year, selected_month)}")
 
 if not monthly_expenses.empty:
     total_spent = monthly_expenses["amount"].sum()
+    saves = income.amount - total_spent if income else -total_spent 
     num_transactions = len(monthly_expenses)
     avg_transaction = total_spent / num_transactions if num_transactions > 0 else 0
 
@@ -107,6 +111,7 @@ if not monthly_expenses.empty:
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Totale Speso", f"€{total_spent:.2f}")
+    col1.metric("Risparmi", f"€{saves:.2f}")
     col2.metric("Numero Transazioni", num_transactions)
     col3.metric("Media per Transazione", f"€{avg_transaction:.2f}")
 
